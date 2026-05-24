@@ -212,7 +212,16 @@ tfoot td:first-child{text-align:left;padding-left:2px;color:var(--text2);font-we
     </div>
     <div style="overflow-x:auto;">
       <table>
-        <thead><tr>
+        <thead>
+        <tr>
+          <th style="width:138px;text-align:left;border-bottom:none;"></th>
+          <th style="width:62px;border-bottom:none;padding-bottom:2px;"><button class="btn btn-sm" onclick="openPasteModal('set')" style="font-size:9px;padding:2px 5px;width:100%;" title="Paste column of numbers">Paste</button></th>
+          <th style="width:62px;border-bottom:none;padding-bottom:2px;"><button class="btn btn-sm" onclick="openPasteModal('f1')" style="font-size:9px;padding:2px 5px;width:100%;" title="Paste column of numbers">Paste</button></th>
+          <th style="width:62px;border-bottom:none;padding-bottom:2px;"><button class="btn btn-sm" onclick="openPasteModal('f2')" style="font-size:9px;padding:2px 5px;width:100%;" title="Paste column of numbers">Paste</button></th>
+          <th style="width:68px;border-bottom:none;padding-bottom:2px;"><button class="btn btn-sm" onclick="openPasteModal('fs')" style="font-size:9px;padding:2px 5px;width:100%;" title="Paste column of numbers">Paste</button></th>
+          <th style="width:30px;border-bottom:none;"></th>
+        </tr>
+        <tr>
           <th style="width:138px;text-align:left;">Team</th>
           <th style="width:62px;"><span style="color:var(--orange)">Set</span></th>
           <th style="width:62px;"><span style="color:var(--blue)">Floor 1</span></th>
@@ -240,6 +249,23 @@ tfoot td:first-child{text-align:left;padding-left:2px;color:var(--text2);font-we
   </div>
 
   <div class="actions" id="ed-actions"></div>
+
+  <!-- PASTE MODAL -->
+  <div id="paste-modal" style="display:none;margin-top:12px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="card-title" style="margin:0;" id="paste-modal-title">Paste column</div>
+        <button class="btn btn-sm" onclick="document.getElementById('paste-modal').style.display='none'">✕</button>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Copy a column from your spreadsheet and paste below. One number per line, top to bottom (Anaheim → Winnipeg).</p>
+      <textarea id="paste-text" placeholder="Paste numbers here..." style="width:100%;height:200px;font-size:13px;padding:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);resize:vertical;line-height:1.8;font-family:'DM Mono',monospace;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-primary" onclick="applyPastedColumn()">Apply to column</button>
+        <button class="btn btn-sm" onclick="document.getElementById('paste-modal').style.display='none'">Cancel</button>
+        <span id="paste-confirm" style="font-size:12px;color:var(--green);align-self:center;opacity:0;transition:opacity .3s;">Applied!</span>
+      </div>
+    </div>
+  </div>
 
   <div id="whatnot-modal" style="display:none;margin-top:12px;">
     <div class="card">
@@ -421,9 +447,18 @@ function renderBreaksList(){
 }
 
 function deleteBreak(id){
-  if(!confirm('Delete this break? This cannot be undone.'))return;
-  breaks=breaks.filter(b=>b.id!==id);
-  saveBreaks();renderBreaksList();
+  const b=breaks.find(x=>x.id===id);if(!b)return;
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML=`<div style="background:var(--surface);border-radius:var(--radius-lg);padding:24px;max-width:340px;width:100%;border:1px solid var(--border);">
+    <div style="font-size:15px;font-weight:600;margin-bottom:10px;">Delete "${b.name||'Unnamed break'}"?</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">This cannot be undone.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-sm" onclick="this.closest('[style*=fixed]').remove()">Cancel</button>
+      <button class="btn btn-danger" onclick="(function(){breaks=breaks.filter(x=>x.id!==${id});saveBreaks();renderBreaksList();renderDashboard();this.closest('[style*=fixed]').remove();if(editingId===${id})showPage('breaks');}).call(this)">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
 }
 
 function finalizeBreak(id){
@@ -431,11 +466,45 @@ function finalizeBreak(id){
   const cost=calcCost(b);
   const sold=b.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
   const profit=sold-cost;
-  if(!confirm(`Finalize "${b.name||'Unnamed break'}"?\n\nCost: $${cost.toFixed(2)}\nSold: $${sold.toFixed(2)}\nProfit: $${profit.toFixed(2)}\n\nInventory will auto-deduct. Once finalized this break is read-only.`))return;
+  // Show inline confirmation modal instead of browser confirm()
+  showFinalizeConfirm(id, b.name||'Unnamed break', cost, sold, profit);
+}
+
+function showFinalizeConfirm(id, name, cost, sold, profit){
+  // Remove any existing modal
+  const existing=document.getElementById('finalize-modal');if(existing)existing.remove();
+  const modal=document.createElement('div');
+  modal.id='finalize-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML=`<div style="background:var(--surface);border-radius:var(--radius-lg);padding:24px;max-width:380px;width:100%;border:1px solid var(--border);">
+    <div style="font-size:15px;font-weight:600;margin-bottom:12px;">Finalize "${name}"?</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.8;">
+      Cost: <strong style="color:var(--text);">$${cost.toFixed(2)}</strong><br>
+      Sold: <strong style="color:var(--text);">$${sold.toFixed(2)}</strong><br>
+      Profit: <strong style="color:${profit>=0?'var(--green)':'var(--red)'};">$${profit.toFixed(2)}</strong><br><br>
+      Inventory will auto-deduct. Once finalized this break is <strong>read-only</strong>.
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-sm" onclick="document.getElementById('finalize-modal').remove()">Cancel</button>
+      <button class="btn btn-success" onclick="confirmFinalize(${id})">✓ Finalize</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function confirmFinalize(id){
+  const b=breaks.find(x=>x.id===id);if(!b)return;
+  const cost=calcCost(b);
+  const sold=b.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
+  const profit=sold-cost;
   b.boxes.forEach(bx=>{const inv=inventory.find(x=>x.id==bx.invId);if(inv)inv.qty=Math.max(0,(parseInt(inv.qty)||0)-bx.qty);});
   saveInventory();
   b.status='finalized';b.cost=cost;b.sold=sold;b.profit=profit;
-  saveBreaks();renderBreaksList();renderDashboard();renderHistory();renderAnalytics();
+  saveBreaks();
+  const modal=document.getElementById('finalize-modal');if(modal)modal.remove();
+  renderBreaksList();renderDashboard();renderHistory();renderAnalytics();
+  // If we're in the editor, update it
+  if(editingId===id){renderEditorActions();buildEditorTeamTable();const badge=document.getElementById('editor-status-badge');if(badge){badge.textContent='Finalized';badge.className='badge badge-green';}}
 }
 
 function renderEditorActions(){
@@ -645,6 +714,49 @@ async function fetchMarketPrice(id){
   saveInventory();renderInventory();
 }
 async function fetchAllMarketPrices(){for(const item of inventory){if(item.url&&item.marketStatus!=='found')await fetchMarketPrice(item.id);}}
+
+// ── PASTE COLUMN ─────────────────────────────────────────────────────────────
+let pasteTargetField = null;
+const pasteColLabels = {set:'Set Price', f1:'Floor 1', f2:'Floor 2', fs:'Final Sale'};
+
+function openPasteModal(field){
+  pasteTargetField = field;
+  document.getElementById('paste-modal-title').textContent = 'Paste column → ' + pasteColLabels[field];
+  document.getElementById('paste-text').value = '';
+  document.getElementById('paste-modal').style.display = 'block';
+  document.getElementById('paste-text').focus();
+}
+
+function applyPastedColumn(){
+  const b = getEditing(); if(!b || !pasteTargetField) return;
+  const raw = document.getElementById('paste-text').value;
+  const nums = raw.split(/[\n\r\t,]+/).map(s => s.replace(/[^0-9.]/g,'')).filter(s => s !== '');
+  if(!nums.length){ alert('No numbers found — paste a column of numbers, one per line.'); return; }
+  nums.forEach((val, i) => {
+    if(i >= b.teams.length) return;
+    const v = parseFloat(val);
+    if(isNaN(v)) return;
+    const t = b.teams[i];
+    if(pasteTargetField === 'set'){
+      t.set = v.toFixed(2);
+      const f1pct = b.f1pct||10, f2pct = b.f2pct||15;
+      if(!t.f1manual) t.f1 = (v*(1-f1pct/100)).toFixed(2);
+      if(!t.f2manual) t.f2 = (v*(1-f2pct/100)).toFixed(2);
+    } else if(pasteTargetField === 'f1'){
+      t.f1 = v.toFixed(2); t.f1manual = true;
+    } else if(pasteTargetField === 'f2'){
+      t.f2 = v.toFixed(2); t.f2manual = true;
+    } else if(pasteTargetField === 'fs'){
+      t.fs = v.toFixed(2);
+      if(v > 0 && !t.pos){ editorSellOrder++; t.pos = editorSellOrder; }
+    }
+  });
+  saveBreaks();
+  buildEditorTeamTable();
+  recalcEditor();
+  document.getElementById('paste-modal').style.display = 'none';
+  const c = document.getElementById('paste-confirm'); c.style.opacity=1; setTimeout(()=>c.style.opacity=0,2000);
+}
 
 // ── BACKUP / RESTORE ─────────────────────────────────────────────────────────
 function exportData(){
