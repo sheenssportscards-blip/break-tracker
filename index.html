@@ -7,645 +7,660 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f7f6f3; --surface: #ffffff; --surface2: #f0efe9; --border: #e2e0d8; --border2: #cccac0;
-    --text: #1a1a18; --text2: #6b6a62; --text3: #9e9d94;
-    --green: #2d6a4f; --green-bg: #d8f3dc; --red: #9b2226; --red-bg: #fde8e8;
-    --blue: #1b4f8a; --blue-bg: #dbeafe; --amber: #92400e; --amber-bg: #fef3c7;
-    --orange: #9a3412; --orange-bg: #ffedd5; --radius: 8px; --radius-lg: 12px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #16161a; --surface: #1e1e24; --surface2: #27272f; --border: #333340; --border2: #44444f;
-      --text: #e8e7e0; --text2: #9a9990; --text3: #66655e;
-      --green: #74c69d; --green-bg: #1a3d2b; --red: #f08080; --red-bg: #3d1a1a;
-      --blue: #93c5fd; --blue-bg: #1e3a5f; --amber: #fcd34d; --amber-bg: #3d2a00;
-      --orange: #fdba74; --orange-bg: #3d1a00;
-    }
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
-  .shell { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
-  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-  .logo { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
-  .logo span { color: var(--text2); font-weight: 400; }
-  nav { display: flex; gap: 4px; background: var(--surface2); border-radius: var(--radius); padding: 4px; border: 1px solid var(--border); margin-bottom: 24px; }
-  nav button { flex: 1; padding: 8px 10px; border: none; background: none; cursor: pointer; border-radius: 6px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: var(--text2); transition: all 0.15s; }
-  nav button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  nav button:hover:not(.active) { color: var(--text); background: rgba(0,0,0,0.04); }
-  .page { display: none; } .page.active { display: block; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
-  .card-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
-  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-  .metric { background: var(--surface2); border-radius: var(--radius); padding: 14px 16px; border: 1px solid var(--border); }
-  .metric-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .metric-value { font-size: 22px; font-weight: 600; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
-  .good { color: var(--green); } .bad { color: var(--red); } .muted { color: var(--text2); }
-  .prog-bg { height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
-  .prog-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.3s ease; }
-  .prog-label { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 12px; margin-bottom: 16px; align-items: end; }
-  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  input[type=text], input[type=date], input[type=number], input[type=url], select {
-    width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius);
-    background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; transition: border-color 0.15s;
-  }
-  input:focus, select:focus { outline: none; border-color: var(--border2); }
-  .floor-settings { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface2); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px; flex-wrap: wrap; }
-  .floor-settings label { font-size: 12px; color: var(--text2); font-weight: 500; }
-  .floor-settings input { width: 52px; text-align: center; padding: 5px 6px; font-family: 'DM Mono', monospace; }
-  .floor-hint { font-size: 11px; color: var(--text3); margin-left: auto; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  thead th { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: center; }
-  thead th:first-child { text-align: left; padding-left: 2px; }
-  tbody td { padding: 3px 4px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
-  tbody td:first-child { text-align: left; padding-left: 2px; font-size: 12px; }
-  tbody tr:hover td { background: var(--surface2); }
-  tfoot td { padding: 8px 4px; font-weight: 600; text-align: right; border-top: 1px solid var(--border2); }
-  .pi { width: 100%; padding: 4px 5px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; text-align: right; font-family: 'DM Mono', monospace; }
-  .pi.sp { background: var(--orange-bg); border-color: #fdba74; color: var(--orange); }
-  .pi.f1 { background: var(--blue-bg); border-color: #93c5fd; color: var(--blue); }
-  .pi.f1.manual { border-color: var(--blue); border-width: 1.5px; }
-  .pi.f2 { background: var(--amber-bg); border-color: #fcd34d; color: var(--amber); }
-  .pi.f2.manual { border-color: var(--amber); border-width: 1.5px; }
-  .pi.fs { background: var(--green-bg); border-color: #74c69d; color: var(--green); font-weight: 600; }
-  .pos-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 600; font-family: 'DM Mono', monospace; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-  .pos-badge.early { background: var(--green-bg); color: var(--green); border-color: transparent; }
-  .pos-badge.mid { background: var(--amber-bg); color: var(--amber); border-color: transparent; }
-  .pos-badge.late { background: var(--red-bg); color: var(--red); border-color: transparent; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: var(--text); transition: all 0.15s; }
-  .btn:hover { background: var(--surface2); }
-  .btn-primary { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
-  .btn-success { background: var(--green-bg); border-color: var(--green); color: var(--green); }
-  .btn-danger { background: var(--red-bg); border-color: var(--red); color: var(--red); }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; font-family: 'DM Mono', monospace; }
-  .badge-green { background: var(--green-bg); color: var(--green); }
-  .badge-red { background: var(--red-bg); color: var(--red); }
-  .badge-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-  .badge-amber { background: var(--amber-bg); color: var(--amber); }
-  .history-row { display: grid; grid-template-columns: 1fr 90px 80px 80px 90px 70px; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .history-row:last-child { border-bottom: none; }
-  .history-hdr { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
-  .stat-row { display: grid; grid-template-columns: 1fr 70px 60px 60px 50px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-  .stat-row:last-child { border-bottom: none; }
-  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .recent-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .recent-row:last-child { border-bottom: none; }
-  .empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
-  .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
-  /* Inventory */
-  .inv-grid { display: grid; grid-template-columns: 1fr 80px 70px 80px 90px 100px 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
-  .inv-hdr { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; text-align: center; }
-  .inv-hdr:first-child { text-align: left; }
-  .market-price { font-size: 12px; font-family: 'DM Mono', monospace; text-align: right; }
-  .market-price.loading { color: var(--text3); font-style: italic; }
-  .market-price.found { color: var(--green); font-weight: 600; }
-  .market-price.failed { color: var(--text3); }
-  .qty-badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; font-family: 'DM Mono', monospace; }
-  .qty-ok { background: var(--green-bg); color: var(--green); }
-  .qty-low { background: var(--amber-bg); color: var(--amber); }
-  .qty-out { background: var(--red-bg); color: var(--red); }
-  /* Box mix dropdowns */
-  .bmix-grid { display: grid; grid-template-columns: 1fr 80px 90px 32px; gap: 8px; align-items: center; margin-bottom: 8px; }
-  .bmix-hdr { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; text-align: center; }
-  .bmix-hdr:first-child { text-align: left; }
-  .box-lc { font-size: 13px; font-family: 'DM Mono', monospace; color: var(--text2); text-align: right; padding-right: 4px; }
-  @media (max-width: 640px) {
-    .metric-grid { grid-template-columns: repeat(2, 1fr); }
-    .form-row { grid-template-columns: 1fr 1fr; }
-    .dash-grid { grid-template-columns: 1fr; }
-    nav button { font-size: 11px; padding: 7px 5px; }
-    .inv-grid { grid-template-columns: 1fr 70px 60px 70px 80px 36px; }
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f7f6f3;--surface:#fff;--surface2:#f0efe9;--border:#e2e0d8;--border2:#cccac0;
+  --text:#1a1a18;--text2:#6b6a62;--text3:#9e9d94;
+  --green:#2d6a4f;--green-bg:#d8f3dc;--red:#9b2226;--red-bg:#fde8e8;
+  --blue:#1b4f8a;--blue-bg:#dbeafe;--amber:#92400e;--amber-bg:#fef3c7;
+  --orange:#9a3412;--orange-bg:#ffedd5;--radius:8px;--radius-lg:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#16161a;--surface:#1e1e24;--surface2:#27272f;--border:#333340;--border2:#44444f;
+  --text:#e8e7e0;--text2:#9a9990;--text3:#66655e;
+  --green:#74c69d;--green-bg:#1a3d2b;--red:#f08080;--red-bg:#3d1a1a;
+  --blue:#93c5fd;--blue-bg:#1e3a5f;--amber:#fcd34d;--amber-bg:#3d2a00;
+  --orange:#fdba74;--orange-bg:#3d1a00;
+}}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+.shell{max-width:960px;margin:0 auto;padding:20px 16px;}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:14px;}
+.logo{font-size:17px;font-weight:600;letter-spacing:-.02em;}
+.logo span{color:var(--text2);font-weight:400;}
+nav{display:flex;gap:4px;background:var(--surface2);border-radius:var(--radius);padding:4px;border:1px solid var(--border);margin-bottom:20px;}
+nav button{flex:1;padding:7px 8px;border:none;background:none;cursor:pointer;border-radius:6px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;color:var(--text2);transition:all .15s;}
+nav button.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+nav button:hover:not(.active){color:var(--text);background:rgba(0,0,0,.04);}
+.page{display:none;}.page.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px;}
+.card-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.metric{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;border:1px solid var(--border);}
+.metric-label{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.metric-value{font-size:18px;font-weight:600;letter-spacing:-.02em;}
+.good{color:var(--green);}.bad{color:var(--red);}.muted{color:var(--text2);}
+.prog-bg{height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.prog-fill{height:100%;border-radius:99px;background:var(--green);transition:width .3s;}
+.prog-label{font-size:11px;color:var(--text2);}
+.field label{display:block;font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+input[type=text],input[type=date],input[type=number],input[type=url],select{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;transition:border-color .15s;}
+input:focus,select:focus{outline:none;border-color:var(--border2);}
+.floor-settings{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:12px;flex-wrap:wrap;}
+.floor-settings label{font-size:12px;color:var(--text2);font-weight:500;}
+.floor-settings input{width:48px;text-align:center;padding:4px 5px;}
+.floor-hint{font-size:11px;color:var(--text3);margin-left:auto;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+thead th{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;padding:5px 3px;border-bottom:1px solid var(--border);text-align:center;}
+thead th:first-child{text-align:left;padding-left:2px;}
+tbody td{padding:2px 3px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+tbody td:first-child{text-align:left;padding-left:2px;font-size:12px;}
+tbody tr:hover td{background:var(--surface2);}
+tfoot td{padding:6px 3px;font-weight:600;text-align:right;border-top:2px solid var(--border2);font-size:12px;}
+tfoot td:first-child{text-align:left;padding-left:2px;color:var(--text2);font-weight:500;}
+.pi{width:100%;padding:3px 4px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;text-align:right;}
+.pi.sp{background:var(--orange-bg);border-color:#fdba74;color:var(--orange);}
+.pi.f1{background:var(--blue-bg);border-color:#93c5fd;color:var(--blue);}
+.pi.f1.manual{border-color:var(--blue);border-width:1.5px;}
+.pi.f2{background:var(--amber-bg);border-color:#fcd34d;color:var(--amber);}
+.pi.f2.manual{border-color:var(--amber);border-width:1.5px;}
+.pi.fs{background:var(--green-bg);border-color:#74c69d;color:var(--green);font-weight:600;}
+.pos-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:600;background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.pos-badge.early{background:var(--green-bg);color:var(--green);border-color:transparent;}
+.pos-badge.mid{background:var(--amber-bg);color:var(--amber);border-color:transparent;}
+.pos-badge.late{background:var(--red-bg);color:var(--red);border-color:transparent;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;color:var(--text);transition:all .15s;}
+.btn:hover{background:var(--surface2);}
+.btn-primary{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);}
+.btn-success{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.btn-danger{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.btn-amber{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
+.btn-sm{padding:4px 9px;font-size:11px;}
+.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+/* Break list */
+.break-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;cursor:pointer;transition:border-color .15s;}
+.break-card:hover{border-color:var(--border2);}
+.break-card-info{display:flex;align-items:center;gap:12px;}
+.break-card-name{font-weight:600;font-size:14px;}
+.break-card-meta{font-size:12px;color:var(--text2);}
+.break-card-actions{display:flex;gap:6px;}
+/* History */
+.history-row{display:grid;grid-template-columns:1fr 85px 75px 75px 85px 65px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.history-row:last-child{border-bottom:none;}
+.history-hdr{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;}
+/* Analytics */
+.stat-row{display:grid;grid-template-columns:1fr 65px 55px 55px 45px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.stat-row:last-child{border-bottom:none;}
+/* Dashboard */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.recent-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.recent-row:last-child{border-bottom:none;}
+.empty{text-align:center;padding:1.5rem;color:var(--text3);font-size:13px;}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;}
+/* Inventory */
+.inv-grid{display:grid;grid-template-columns:1fr 75px 90px 110px 80px 1fr 32px;gap:6px;align-items:center;margin-bottom:8px;}
+.inv-hdr{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+.inv-hdr:first-child{text-align:left;}
+.market-price{font-size:12px;text-align:right;}
+.market-price.loading{color:var(--text3);font-style:italic;}
+.market-price.found{color:var(--green);font-weight:600;}
+.qty-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;}
+.qty-ok{background:var(--green-bg);color:var(--green);}
+.qty-low{background:var(--amber-bg);color:var(--amber);}
+.qty-out{background:var(--red-bg);color:var(--red);}
+/* Box mix */
+.bmix-grid{display:grid;grid-template-columns:1fr 75px 85px 32px;gap:6px;align-items:center;margin-bottom:6px;}
+.bmix-hdr{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+.bmix-hdr:first-child{text-align:left;}
+.box-lc{font-size:12px;color:var(--text2);text-align:right;padding-right:4px;}
+/* Break editor header */
+.break-editor-header{display:grid;grid-template-columns:1fr 1fr 100px;gap:10px;margin-bottom:12px;align-items:end;}
+@media(max-width:640px){
+  .metric-grid{grid-template-columns:repeat(2,1fr);}
+  .dash-grid{grid-template-columns:1fr;}
+  nav button{font-size:11px;padding:6px 4px;}
+  .inv-grid{grid-template-columns:1fr 65px 80px 100px 70px 32px;}
+}
 </style>
 </head>
 <body>
 <div class="shell">
-  <header>
-    <div class="logo">Break Tracker <span>by WhatNot</span></div>
-    <div id="hdr-break-name" style="font-size:13px;color:var(--text2)"></div>
-  </header>
-  <nav>
-    <button class="active" onclick="showPage('dashboard')">Dashboard</button>
-    <button onclick="showPage('active')">Active break</button>
-    <button onclick="showPage('history')">History</button>
-    <button onclick="showPage('analytics')">Team analytics</button>
-    <button onclick="showPage('inventory')">Inventory</button>
-  </nav>
-
-  <!-- DASHBOARD -->
-  <div id="page-dashboard" class="page active">
-    <div class="metric-grid" id="dash-metrics"></div>
-    <div class="dash-grid">
-      <div class="card"><div class="card-title">Recent breaks</div><div id="dash-recent"></div></div>
-      <div class="card"><div class="card-title">Top teams by avg sale</div><div id="dash-top-teams"></div></div>
-    </div>
-    <div style="text-align:center">
-      <button class="btn btn-primary" onclick="showPage('active');startNewBreak()">+ Start new break</button>
-    </div>
+<header>
+  <div class="logo">Break Tracker <span>· Sheen's Sports Cards</span></div>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-sm" onclick="exportData()" title="Export backup">&#8681; Backup</button>
+    <label class="btn btn-sm" style="cursor:pointer;margin:0" title="Import backup">&#8679; Restore <input type="file" accept=".json" onchange="importData(this)" style="display:none"/></label>
   </div>
+</header>
 
-  <!-- ACTIVE BREAK -->
-  <div id="page-active" class="page">
-    <div class="card">
-      <div class="form-row">
-        <div class="field"><label>Break name</label><input type="text" id="bn" placeholder="e.g. Monday 5/26" oninput="ab.name=this.value;saveActive();document.getElementById('hdr-break-name').textContent=this.value" /></div>
-        <div class="field"><label>Date</label><input type="date" id="bd" oninput="ab.date=this.value;saveActive()" /></div>
-        <div class="field"><label>Target $</label><input type="number" id="bt" value="350" oninput="ab.target=+this.value;recalc()" /></div>
-      </div>
-      <div class="metric-grid">
-        <div class="metric"><div class="metric-label">Total cost</div><div class="metric-value" id="m-cost">$0</div></div>
-        <div class="metric"><div class="metric-label">Need to sell</div><div class="metric-value" id="m-need">$0</div></div>
-        <div class="metric"><div class="metric-label">Sold so far</div><div class="metric-value good" id="m-sold">$0</div></div>
-        <div class="metric"><div class="metric-label">Profit / loss</div><div class="metric-value" id="m-profit">$0</div></div>
-      </div>
-      <div class="prog-bg"><div class="prog-fill" id="prog" style="width:0%"></div></div>
-      <div class="prog-label" id="prog-lbl" style="margin-bottom:0">$0 of $0 needed</div>
-    </div>
+<nav>
+  <button class="active" onclick="showPage('dashboard')">Dashboard</button>
+  <button onclick="showPage('breaks')">Breaks</button>
+  <button onclick="showPage('history')">History</button>
+  <button onclick="showPage('analytics')">Analytics</button>
+  <button onclick="showPage('inventory')">Inventory</button>
+</nav>
 
-    <div class="card">
-      <div class="card-title">Box / case mix &nbsp;·&nbsp; 18% WhatNot fee built in</div>
-      <div class="bmix-grid" style="margin-bottom:8px">
-        <span class="bmix-hdr">Product</span><span class="bmix-hdr">Qty</span><span class="bmix-hdr">Line cost</span><span></span>
-      </div>
-      <div id="box-rows"></div>
-      <button class="btn btn-sm" style="margin-top:8px" onclick="addBoxSlot()">+ Add product</button>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div class="card-title" style="margin:0">Team pricing</div>
-        <span style="font-size:12px;color:var(--text2)" id="sold-count">0 / 32 sold</span>
-      </div>
-      <div class="floor-settings">
-        <label>Floor 1</label>
-        <input type="number" id="f1pct" value="10" min="1" max="50" oninput="ab.f1pct=+this.value;applyAutoFloors();saveActive()" />
-        <label>% off &nbsp;&nbsp; Floor 2</label>
-        <input type="number" id="f2pct" value="15" min="1" max="50" oninput="ab.f2pct=+this.value;applyAutoFloors();saveActive()" />
-        <label>% off</label>
-        <span class="floor-hint">Edit any cell to override</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead><tr>
-            <th style="width:140px;text-align:left">Team</th>
-            <th style="width:66px"><span style="color:var(--orange)">Set</span></th>
-            <th style="width:66px"><span style="color:var(--blue)">Floor 1</span></th>
-            <th style="width:66px"><span style="color:var(--amber)">Floor 2</span></th>
-            <th style="width:72px"><span style="color:var(--green)">Final sale</span></th>
-            <th style="width:38px">#</th>
-          </tr></thead>
-          <tbody id="team-body"></tbody>
-          <tfoot><tr>
-            <td colspan="4" style="text-align:right;font-size:12px;color:var(--text2);font-weight:500">Total sold</td>
-            <td style="font-family:'DM Mono',monospace;font-size:13px;text-align:right" id="foot-total">$0.00</td>
-            <td></td>
-          </tr></tfoot>
-        </table>
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-danger btn-sm" onclick="clearActive()">Clear break</button>
-      <button class="btn btn-primary btn-sm" onclick="showWhatnotExport()">Export for WhatNot</button>
-      <button class="btn btn-success" onclick="reviewBreak()">&#10003; Review &amp; lock</button>
-    </div>
-
-    <div id="whatnot-modal" style="display:none;margin-top:16px">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div class="card-title" style="margin:0">WhatNot export &nbsp;·&nbsp; team + set price</div>
-          <button class="btn btn-sm" onclick="document.getElementById('whatnot-modal').style.display='none'">&#x2715; Close</button>
-        </div>
-        <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Copy and paste into WhatNot. Only teams with a set price are included.</p>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <button class="btn btn-primary btn-sm" onclick="copyWhatnot()">Copy all</button>
-          <span id="copy-confirm" style="font-size:12px;color:var(--green);align-self:center;opacity:0;transition:opacity .3s">Copied!</span>
-        </div>
-        <textarea id="whatnot-text" readonly style="width:100%;height:300px;font-family:'DM Mono',monospace;font-size:12px;padding:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);resize:vertical;line-height:1.8"></textarea>
-      </div>
-    </div>
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="metric-grid" id="dash-metrics"></div>
+  <div class="dash-grid">
+    <div class="card"><div class="card-title">Recent breaks</div><div id="dash-recent"></div></div>
+    <div class="card"><div class="card-title">Top teams by avg sale</div><div id="dash-top-teams"></div></div>
   </div>
-
-  <!-- HISTORY -->
-  <div id="page-history" class="page">
-    <div class="card">
-      <div class="card-title">All breaks</div>
-      <div class="history-row" style="padding-bottom:8px">
-        <span class="history-hdr">Break</span><span class="history-hdr" style="text-align:center">Date</span>
-        <span class="history-hdr" style="text-align:right">Cost</span><span class="history-hdr" style="text-align:right">Sold</span>
-        <span class="history-hdr" style="text-align:right">Profit</span><span class="history-hdr" style="text-align:center">Target</span>
-      </div>
-      <div id="history-list"></div>
-    </div>
-  </div>
-
-  <!-- ANALYTICS -->
-  <div id="page-analytics" class="page">
-    <div class="card">
-      <div class="card-title">Team performance &nbsp;·&nbsp; sorted by avg sell position</div>
-      <div class="stat-row" style="padding-bottom:8px">
-        <span class="history-hdr">Team</span><span class="history-hdr" style="text-align:right">Avg sale</span>
-        <span class="history-hdr" style="text-align:right">Avg pos</span><span class="history-hdr" style="text-align:right">% of set</span>
-        <span class="history-hdr" style="text-align:right">Breaks</span>
-      </div>
-      <div id="analytics-list"></div>
-    </div>
-  </div>
-
-  <!-- INVENTORY -->
-  <div id="page-inventory" class="page">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div class="card-title" style="margin:0">Box / case inventory</div>
-        <button class="btn btn-primary btn-sm" onclick="addInventoryItem()">+ Add product</button>
-      </div>
-      <div class="inv-grid" style="margin-bottom:8px">
-        <span class="inv-hdr">Product</span>
-        <span class="inv-hdr">My cost</span>
-        <span class="inv-hdr">On hand</span>
-        <span class="inv-hdr">Restock</span>
-        <span class="inv-hdr">Market $</span>
-        <span class="inv-hdr">URL</span>
-        <span></span>
-      </div>
-      <div id="inv-rows"></div>
-      <p style="font-size:11px;color:var(--text3);margin-top:12px">Market price is scraped from the URL when you visit this page. It may not always be available depending on the site.</p>
-    </div>
-  </div>
-
+  <div style="text-align:center"><button class="btn btn-primary" onclick="showPage('breaks')">View all breaks</button></div>
 </div>
+
+<!-- BREAKS LIST -->
+<div id="page-breaks" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <h2 style="font-size:15px;font-weight:600;">My breaks</h2>
+    <button class="btn btn-primary" onclick="createNewBreak()">+ New break</button>
+  </div>
+  <div id="breaks-list"></div>
+</div>
+
+<!-- BREAK EDITOR -->
+<div id="page-editor" class="page">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button class="btn btn-sm" onclick="showPage('breaks')">&#8592; Back</button>
+    <div style="flex:1;font-size:15px;font-weight:600;" id="editor-title">Break</div>
+    <span class="badge" id="editor-status-badge"></span>
+  </div>
+
+  <div class="card">
+    <div class="break-editor-header">
+      <div class="field"><label>Break name</label><input type="text" id="ed-name" placeholder="e.g. Monday 5/26" oninput="updateEditingBreak('name',this.value)" /></div>
+      <div class="field"><label>Date</label><input type="date" id="ed-date" oninput="updateEditingBreak('date',this.value)" /></div>
+      <div class="field"><label>Target $</label><input type="number" id="ed-target" value="350" oninput="updateEditingBreak('target',+this.value);recalcEditor()" /></div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Total cost</div><div class="metric-value" id="ed-cost">$0</div></div>
+      <div class="metric"><div class="metric-label">Need to sell</div><div class="metric-value" id="ed-need">$0</div></div>
+      <div class="metric"><div class="metric-label">Sold so far</div><div class="metric-value good" id="ed-sold">$0</div></div>
+      <div class="metric"><div class="metric-label">Profit / loss</div><div class="metric-value" id="ed-profit">$0</div></div>
+    </div>
+    <div class="prog-bg"><div class="prog-fill" id="ed-prog" style="width:0%"></div></div>
+    <div class="prog-label" id="ed-prog-lbl">$0 of $0 needed</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Box / case mix · 18% WhatNot fee built in</div>
+    <div class="bmix-grid" style="margin-bottom:8px">
+      <span class="bmix-hdr">Product</span><span class="bmix-hdr">Qty</span><span class="bmix-hdr">Line cost</span><span></span>
+    </div>
+    <div id="ed-box-rows"></div>
+    <button class="btn btn-sm" style="margin-top:8px" onclick="addEditorBoxSlot()">+ Add product</button>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="card-title" style="margin:0;">Team pricing</div>
+      <span style="font-size:11px;color:var(--text2);" id="ed-sold-count">0 / 32 sold</span>
+    </div>
+    <div class="floor-settings">
+      <label>Floor 1</label>
+      <input type="number" id="ed-f1pct" value="10" min="1" max="50" oninput="updateEditingBreak('f1pct',+this.value);applyEditorAutoFloors();saveBreaks()" />
+      <label>% off &nbsp; Floor 2</label>
+      <input type="number" id="ed-f2pct" value="15" min="1" max="50" oninput="updateEditingBreak('f2pct',+this.value);applyEditorAutoFloors();saveBreaks()" />
+      <label>% off</label>
+      <span class="floor-hint">Edit any cell to override</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr>
+          <th style="width:138px;text-align:left;">Team</th>
+          <th style="width:62px;"><span style="color:var(--orange)">Set</span></th>
+          <th style="width:62px;"><span style="color:var(--blue)">Floor 1</span></th>
+          <th style="width:62px;"><span style="color:var(--amber)">Floor 2</span></th>
+          <th style="width:68px;"><span style="color:var(--green)">Final sale</span></th>
+          <th style="width:30px;">#</th>
+        </tr></thead>
+        <tbody id="ed-team-body"></tbody>
+        <tfoot>
+          <tr id="ed-tfoot-f1">
+            <td>Proj. @ Floor 1</td>
+            <td colspan="5" style="text-align:right;" id="ed-proj-f1">—</td>
+          </tr>
+          <tr id="ed-tfoot-f2">
+            <td>Proj. @ Floor 2</td>
+            <td colspan="5" style="text-align:right;" id="ed-proj-f2">—</td>
+          </tr>
+          <tr>
+            <td>Total sold</td>
+            <td colspan="5" style="text-align:right;" id="ed-foot-total">$0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="actions" id="ed-actions"></div>
+
+  <div id="whatnot-modal" style="display:none;margin-top:12px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">WhatNot export · team + set price</div>
+        <button class="btn btn-sm" onclick="document.getElementById('whatnot-modal').style.display='none'">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="btn btn-primary btn-sm" onclick="copyWhatnot()">Copy all</button>
+        <span id="copy-confirm" style="font-size:12px;color:var(--green);align-self:center;opacity:0;transition:opacity .3s;">Copied!</span>
+      </div>
+      <textarea id="whatnot-text" readonly style="width:100%;height:280px;font-size:12px;padding:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);resize:vertical;line-height:1.8;"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="page-history" class="page">
+  <div class="card">
+    <div class="card-title">Finalized breaks</div>
+    <div class="history-row" style="padding-bottom:6px;">
+      <span class="history-hdr">Break</span><span class="history-hdr" style="text-align:center;">Date</span>
+      <span class="history-hdr" style="text-align:right;">Cost</span><span class="history-hdr" style="text-align:right;">Sold</span>
+      <span class="history-hdr" style="text-align:right;">Profit</span><span class="history-hdr" style="text-align:center;">Target</span>
+    </div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div id="page-analytics" class="page">
+  <div class="card">
+    <div class="card-title">Team performance · sorted by avg sell position</div>
+    <div class="stat-row" style="padding-bottom:6px;">
+      <span class="history-hdr">Team</span><span class="history-hdr" style="text-align:right;">Avg sale</span>
+      <span class="history-hdr" style="text-align:right;">Avg pos</span><span class="history-hdr" style="text-align:right;">% of set</span>
+      <span class="history-hdr" style="text-align:right;">Breaks</span>
+    </div>
+    <div id="analytics-list"></div>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div id="page-inventory" class="page">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="card-title" style="margin:0;">Box / case inventory</div>
+      <button class="btn btn-primary btn-sm" onclick="addInventoryItem()">+ Add product</button>
+    </div>
+    <div class="inv-grid" style="margin-bottom:8px;">
+      <span class="inv-hdr">Product</span><span class="inv-hdr">My cost</span>
+      <span class="inv-hdr">On hand</span><span class="inv-hdr">Restock</span>
+      <span class="inv-hdr">Market $</span><span class="inv-hdr">URL</span><span></span>
+    </div>
+    <div id="inv-rows"></div>
+    <p style="font-size:11px;color:var(--text3);margin-top:10px;">Market price scraped from URL when you visit this page. May not work on all sites.</p>
+  </div>
+</div>
+
+</div><!-- /shell -->
+
 <script>
 const TEAMS=["Anaheim Ducks","Boston Bruins","Buffalo Sabres","Calgary Flames","Carolina Hurricanes","Chicago Blackhawks","Colorado Avalanche","Columbus Blue Jackets","Dallas Stars","Detroit Red Wings","Edmonton Oilers","Florida Panthers","Los Angeles Kings","Minnesota Wild","Montreal Canadiens","Nashville Predators","New Jersey Devils","New York Islanders","New York Rangers","Ottawa Senators","Philadelphia Flyers","Pittsburgh Penguins","San Jose Sharks","Seattle Kraken","St. Louis Blues","Tampa Bay Lightning","Toronto Maple Leafs","Utah Mammoth/ARI","Vancouver Canucks","Vegas Golden Knights","Washington Capitals","Winnipeg Jets"];
 
+// STATUS: 'draft' | 'finalized'
 function freshBreak(){
-  return{name:'',date:new Date().toISOString().slice(0,10),target:350,f1pct:10,f2pct:15,
-    boxes:[],teams:TEAMS.map(t=>({name:t,set:'',f1:'',f2:'',f1manual:false,f2manual:false,fs:'',pos:null})),locked:false};
+  return{
+    id:Date.now(),name:'',date:new Date().toISOString().slice(0,10),
+    target:350,f1pct:10,f2pct:15,status:'draft',
+    boxes:[],
+    teams:TEAMS.map(t=>({name:t,set:'',f1:'',f2:'',f1manual:false,f2manual:false,fs:'',pos:null})),
+    cost:0,sold:0,profit:0
+  };
 }
 
-let ab=freshBreak();
-let breaks=[];
+let breaks=[];      // all breaks (draft + finalized)
 let inventory=[];
+let editingId=null; // which break is open in editor
 
-function saveBreaks(){try{localStorage.setItem('bt-breaks-v1',JSON.stringify(breaks));}catch(e){}}
-function saveActive(){try{localStorage.setItem('bt-active-v3',JSON.stringify(ab));}catch(e){}}
+function saveBreaks(){try{localStorage.setItem('bt-breaks-v2',JSON.stringify(breaks));}catch(e){}}
 function saveInventory(){try{localStorage.setItem('bt-inventory-v1',JSON.stringify(inventory));}catch(e){}}
 
 function load(){
-  try{const d=localStorage.getItem('bt-breaks-v1');if(d)breaks=JSON.parse(d);}catch(e){}
-  try{const d=localStorage.getItem('bt-active-v3');if(d)ab=JSON.parse(d);}catch(e){}
+  try{const d=localStorage.getItem('bt-breaks-v2');if(d)breaks=JSON.parse(d);}catch(e){}
+  // Migrate old single active break
+  try{const d=localStorage.getItem('bt-active-v3');if(d&&!breaks.length){const ab=JSON.parse(d);if(ab.name){ab.id=ab.id||Date.now();ab.status='draft';breaks.push(ab);saveBreaks();}}}catch(e){}
   try{const d=localStorage.getItem('bt-inventory-v1');if(d)inventory=JSON.parse(d);}catch(e){}
-  renderActive();renderDashboard();renderHistory();renderAnalytics();
+  renderDashboard();renderHistory();renderAnalytics();renderBreaksList();
 }
 
+function getEditing(){return breaks.find(b=>b.id===editingId);}
+
+function updateEditingBreak(field,val){
+  const b=getEditing();if(!b)return;
+  b[field]=val;saveBreaks();
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
 function showPage(p){
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  ['dashboard','active','history','analytics','inventory'].forEach((n,i)=>{
+  ['dashboard','breaks','history','analytics','inventory'].forEach((n,i)=>{
     if(n===p)document.querySelectorAll('nav button')[i].classList.add('active');
   });
   if(p==='dashboard')renderDashboard();
+  if(p==='breaks')renderBreaksList();
   if(p==='history')renderHistory();
   if(p==='analytics')renderAnalytics();
   if(p==='inventory'){renderInventory();fetchAllMarketPrices();}
 }
 
-// ── INVENTORY ──────────────────────────────────────────────────────────────
-function addInventoryItem(){
-  inventory.push({id:Date.now(),name:'',cost:'',qty:0,restock:0,url:'',marketPrice:null,marketStatus:'idle'});
-  saveInventory();renderInventory();
+// ── BREAKS LIST ──────────────────────────────────────────────────────────────
+function createNewBreak(){
+  const b=freshBreak();
+  breaks.unshift(b);
+  saveBreaks();
+  openEditor(b.id);
 }
 
-function updateInv(id,field,val){
-  const item=inventory.find(x=>x.id===id);
-  if(!item)return;
-  if(field==='qty'||field==='restock') val=parseInt(val)||0;
-  item[field]=val;
+function openEditor(id){
+  editingId=id;
+  const b=getEditing();if(!b)return;
+  document.getElementById('editor-title').textContent=b.name||'Unnamed break';
+  document.getElementById('ed-name').value=b.name||'';
+  document.getElementById('ed-date').value=b.date||'';
+  document.getElementById('ed-target').value=b.target||350;
+  document.getElementById('ed-f1pct').value=b.f1pct||10;
+  document.getElementById('ed-f2pct').value=b.f2pct||15;
+  const badge=document.getElementById('editor-status-badge');
+  badge.textContent=b.status==='finalized'?'Finalized':'Draft';
+  badge.className='badge '+(b.status==='finalized'?'badge-green':'badge-amber');
+  renderEditorBoxes();
+  if(b.boxes.length===0)addEditorBoxSlot();
+  buildEditorTeamTable();
+  recalcEditor();
+  renderEditorActions();
+  showPage('editor');
+}
+
+function renderBreaksList(){
+  const el=document.getElementById('breaks-list');
+  const drafts=breaks.filter(b=>b.status==='draft');
+  const finalized=breaks.filter(b=>b.status==='finalized');
+  let html='';
+  if(drafts.length){
+    html+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Drafts</div>`;
+    html+=drafts.map(b=>{
+      const cost=calcCost(b);
+      const sold=b.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
+      const soldCount=b.teams.filter(t=>t.fs&&parseFloat(t.fs)>0).length;
+      return `<div class="break-card" onclick="openEditor(${b.id})">
+        <div>
+          <div class="break-card-name">${b.name||'Unnamed break'}</div>
+          <div class="break-card-meta">${b.date||'No date'} &nbsp;·&nbsp; ${soldCount}/32 sold &nbsp;·&nbsp; Cost: $${cost.toFixed(0)}</div>
+        </div>
+        <div class="break-card-actions" onclick="event.stopPropagation()">
+          <span class="badge badge-amber">Draft</span>
+          <button class="btn btn-sm btn-success" onclick="event.stopPropagation();finalizeBreak(${b.id})">Finalize</button>
+          <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteBreak(${b.id})">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  if(finalized.length){
+    html+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px;">Finalized</div>`;
+    html+=finalized.map(b=>`<div class="break-card" onclick="openEditor(${b.id})" style="opacity:.7;">
+      <div>
+        <div class="break-card-name">${b.name||'Unnamed break'}</div>
+        <div class="break-card-meta">${b.date||'No date'} &nbsp;·&nbsp; Profit: <strong style="color:${b.profit>=0?'var(--green)':'var(--red)'}">$${b.profit.toFixed(0)}</strong></div>
+      </div>
+      <div class="break-card-actions" onclick="event.stopPropagation()">
+        <span class="badge badge-green">Finalized</span>
+      </div>
+    </div>`).join('');
+  }
+  if(!breaks.length) html='<div class="empty">No breaks yet — create your first one above</div>';
+  el.innerHTML=html;
+}
+
+function deleteBreak(id){
+  if(!confirm('Delete this break? This cannot be undone.'))return;
+  breaks=breaks.filter(b=>b.id!==id);
+  saveBreaks();renderBreaksList();
+}
+
+function finalizeBreak(id){
+  const b=breaks.find(x=>x.id===id);if(!b)return;
+  const cost=calcCost(b);
+  const sold=b.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
+  const profit=sold-cost;
+  if(!confirm(`Finalize "${b.name||'Unnamed break'}"?\n\nCost: $${cost.toFixed(2)}\nSold: $${sold.toFixed(2)}\nProfit: $${profit.toFixed(2)}\n\nInventory will auto-deduct. Once finalized this break is read-only.`))return;
+  b.boxes.forEach(bx=>{const inv=inventory.find(x=>x.id==bx.invId);if(inv)inv.qty=Math.max(0,(parseInt(inv.qty)||0)-bx.qty);});
   saveInventory();
-  if(field==='qty')renderInventory();
+  b.status='finalized';b.cost=cost;b.sold=sold;b.profit=profit;
+  saveBreaks();renderBreaksList();renderDashboard();renderHistory();renderAnalytics();
 }
 
-function stepQty(id, delta){
-  const item=inventory.find(x=>x.id===id);
-  if(!item)return;
-  item.qty=Math.max(0,(parseInt(item.qty)||0)+delta);
-  saveInventory();renderInventory();
-}
-
-function removeInv(id){
-  if(!confirm('Remove this product from inventory?'))return;
-  inventory=inventory.filter(x=>x.id!==id);
-  saveInventory();renderInventory();
-}
-
-function restockInv(id){
-  const item=inventory.find(x=>x.id===id);
-  if(!item)return;
-  item.qty=(parseInt(item.qty)||0)+(parseInt(item.restock)||0);
-  saveInventory();renderInventory();
-}
-
-function renderInventory(){
-  const c=document.getElementById('inv-rows');c.innerHTML='';
-  if(!inventory.length){c.innerHTML='<div class="empty">No products yet — add your first box or case above</div>';return;}
-  inventory.forEach(item=>{
-    const qty=parseInt(item.qty)||0;
-    const qtyClass=qty===0?'qty-out':qty<=2?'qty-low':'qty-ok';
-    let marketHtml='';
-    if(item.marketStatus==='loading') marketHtml='<span class="market-price loading">fetching...</span>';
-    else if(item.marketStatus==='found') marketHtml=`<span class="market-price found">$${item.marketPrice}</span>`;
-    else if(item.marketStatus==='failed') marketHtml=item.url?`<a href="${item.url}" target="_blank" style="font-size:11px;color:var(--blue)">View site</a>`:'<span class="market-price failed">—</span>';
-    else marketHtml='<span class="market-price failed">—</span>';
-
-    const row=document.createElement('div');row.className='inv-grid';
-    row.innerHTML=`
-      <input type="text" placeholder="Product name" value="${item.name||''}" onblur="updateInv(${item.id},'name',this.value)" />
-      <input type="number" placeholder="0.00" value="${item.cost||''}" onblur="updateInv(${item.id},'cost',this.value)" style="text-align:right" />
-      <div style="display:flex;align-items:center;gap:6px">
-        <button class="btn btn-sm" style="padding:3px 7px;font-size:16px;line-height:1" onclick="stepQty(${item.id},-1)">−</button>
-        <span class="qty-badge ${qtyClass}">${qty}</span>
-        <button class="btn btn-sm" style="padding:3px 7px;font-size:16px;line-height:1" onclick="stepQty(${item.id},1)">+</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:4px">
-        <input type="number" placeholder="0" value="${item.restock||0}" onblur="updateInv(${item.id},'restock',this.value)" style="width:48px;text-align:center" />
-        <button class="btn btn-sm btn-primary" style="white-space:nowrap" onclick="restockInv(${item.id})">+ Restock</button>
-      </div>
-      <div>${marketHtml}</div>
-      <input type="url" placeholder="Paste product URL" value="${item.url||''}" onchange="updateInv(${item.id},'url',this.value);fetchMarketPrice(${item.id})" style="font-size:11px" />
-      <button class="btn btn-sm btn-danger" onclick="removeInv(${item.id})" style="padding:4px 8px">&#x2715;</button>`;
-    c.appendChild(row);
-  });
-}
-
-async function fetchMarketPrice(id){
-  const item=inventory.find(x=>x.id===id);
-  if(!item||!item.url)return;
-  item.marketStatus='loading';item.marketPrice=null;
-  renderInventory();
-  try{
-    const proxyUrl='https://api.allorigins.win/get?url='+encodeURIComponent(item.url);
-    const resp=await fetch(proxyUrl,{signal:AbortSignal.timeout(8000)});
-    if(!resp.ok)throw new Error('fetch failed');
-    const data=await resp.json();
-    const html=data.contents||'';
-    // Try multiple price patterns common on hobby/retail sites
-    const patterns=[
-      /itemprop="price"[^>]*content="([\d.]+)"/i,
-      /"price":\s*"?([\d.]+)"?/,
-      /class="[^"]*price[^"]*"[^>]*>\s*\$?([\d,]+\.?\d*)/i,
-      /\$\s*([\d,]+\.\d{2})/,
-      /"currentPrice"[^>]*>([\d.]+)/i,
-      /sale.?price[^>]*>\s*\$?([\d.]+)/i,
-    ];
-    let found=null;
-    for(const p of patterns){
-      const m=html.match(p);
-      if(m){const v=parseFloat(m[1].replace(/,/g,''));if(v>1&&v<10000){found=v.toFixed(2);break;}}
-    }
-    if(found){item.marketStatus='found';item.marketPrice=found;}
-    else{item.marketStatus='failed';}
-  }catch(e){item.marketStatus='failed';}
-  saveInventory();renderInventory();
-}
-
-async function fetchAllMarketPrices(){
-  for(const item of inventory){
-    if(item.url&&item.marketStatus!=='found'){await fetchMarketPrice(item.id);}
+function renderEditorActions(){
+  const b=getEditing();if(!b)return;
+  const el=document.getElementById('ed-actions');
+  if(b.status==='finalized'){
+    el.innerHTML=`<span style="font-size:12px;color:var(--text2);">This break is finalized and read-only.</span>`;
+  } else {
+    el.innerHTML=`
+      <button class="btn btn-sm btn-danger" onclick="deleteBreak(${b.id});showPage('breaks')">Delete</button>
+      <button class="btn btn-sm btn-primary" onclick="showWhatnotExport()">Export for WhatNot</button>
+      <button class="btn btn-sm btn-amber" onclick="saveBreaks();alert('Saved as draft!')">Save draft</button>
+      <button class="btn btn-success" onclick="finalizeBreak(${b.id});showPage('breaks')">✓ Finalize break</button>`;
   }
 }
 
-// ── BOX MIX (dropdowns from inventory) ────────────────────────────────────
-function addBoxSlot(){
-  ab.boxes.push({id:Date.now(),invId:'',qty:1});
-  saveActive();renderBoxes();recalc();
+// ── EDITOR: BOX MIX ──────────────────────────────────────────────────────────
+function addEditorBoxSlot(){
+  const b=getEditing();if(!b)return;
+  b.boxes.push({id:Date.now(),invId:'',qty:1});
+  saveBreaks();renderEditorBoxes();recalcEditor();
 }
-
-function updateBoxSlot(id,field,val){
-  const b=ab.boxes.find(x=>x.id===id);if(!b)return;
-  b[field]=field==='qty'?parseInt(val)||1:val;
-  saveActive();renderBoxes();recalc();
+function updateEditorBox(boxId,field,val){
+  const b=getEditing();if(!b)return;
+  const bx=b.boxes.find(x=>x.id===boxId);if(!bx)return;
+  bx[field]=field==='qty'?parseInt(val)||1:val;
+  saveBreaks();renderEditorBoxes();recalcEditor();
 }
-
-function removeBoxSlot(id){ab.boxes=ab.boxes.filter(b=>b.id!==id);saveActive();renderBoxes();recalc();}
-
-function renderBoxes(){
-  const c=document.getElementById('box-rows');c.innerHTML='';
-  if(!inventory.length){
-    c.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0">Add products to your <a href="#" onclick="showPage(\'inventory\')" style="color:var(--blue)">Inventory</a> first.</p>';
-    return;
-  }
-  const opts=inventory.map(i=>`<option value="${i.id}" ${i.name?'':'disabled'}>${i.name||'(unnamed)'} — $${parseFloat(i.cost||0).toFixed(2)}/box (${parseInt(i.qty)||0} on hand)</option>`).join('');
-  ab.boxes.forEach(b=>{
-    const invItem=inventory.find(x=>x.id==b.invId);
-    const cost=invItem?parseFloat(invItem.cost)||0:0;
-    const lc=cost*b.qty*1.18;
+function removeEditorBox(boxId){
+  const b=getEditing();if(!b)return;
+  b.boxes=b.boxes.filter(x=>x.id!==boxId);
+  saveBreaks();renderEditorBoxes();recalcEditor();
+}
+function renderEditorBoxes(){
+  const b=getEditing();const c=document.getElementById('ed-box-rows');c.innerHTML='';
+  if(!b)return;
+  if(!inventory.length){c.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Add products to <a href="#" onclick="showPage(\'inventory\')" style="color:var(--blue);">Inventory</a> first.</p>';return;}
+  const opts=inventory.map(i=>`<option value="${i.id}">${i.name||'(unnamed)'} — $${parseFloat(i.cost||0).toFixed(2)}/box (${parseInt(i.qty)||0} on hand)</option>`).join('');
+  const ro=b.status==='finalized';
+  b.boxes.forEach(bx=>{
+    const inv=inventory.find(x=>x.id==bx.invId);
+    const lc=(inv?parseFloat(inv.cost)||0:0)*bx.qty*1.18;
     const row=document.createElement('div');row.className='bmix-grid';
     row.innerHTML=`
-      <select onchange="updateBoxSlot(${b.id},'invId',this.value)">
-        <option value="">— Select product —</option>
-        ${opts}
-      </select>
-      <select onchange="updateBoxSlot(${b.id},'qty',this.value)">
-        ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${b.qty===n?'selected':''}>${n}</option>`).join('')}
-      </select>
+      <select onchange="updateEditorBox(${bx.id},'invId',this.value)" ${ro?'disabled':''}><option value="">— Select —</option>${opts}</select>
+      <select onchange="updateEditorBox(${bx.id},'qty',this.value)" ${ro?'disabled':''}>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}"${bx.qty===n?' selected':''}>${n}</option>`).join('')}</select>
       <div class="box-lc">${lc>0?'$'+lc.toFixed(2):'—'}</div>
-      <button class="btn btn-sm" onclick="removeBoxSlot(${b.id})" aria-label="Remove" style="padding:4px 8px">&#x2715;</button>`;
-    row.querySelector('select').value=b.invId||'';
+      ${ro?'<span></span>':`<button class="btn btn-sm" onclick="removeEditorBox(${bx.id})" style="padding:3px 7px;">✕</button>`}`;
+    row.querySelector('select').value=bx.invId||'';
     c.appendChild(row);
   });
 }
 
-// ── TEAM PRICING ──────────────────────────────────────────────────────────
-function applyAutoFloors(){
-  const f1pct=ab.f1pct||10,f2pct=ab.f2pct||15;
-  ab.teams.forEach(t=>{
-    const sp=parseFloat(t.set)||0;
-    if(sp>0){
-      if(!t.f1manual)t.f1=(sp*(1-f1pct/100)).toFixed(2);
-      if(!t.f2manual)t.f2=(sp*(1-f2pct/100)).toFixed(2);
-    }
-  });
-  refreshFloorInputs();recalc();
+// ── EDITOR: TEAM TABLE ────────────────────────────────────────────────────────
+function applyEditorAutoFloors(){
+  const b=getEditing();if(!b)return;
+  const f1=b.f1pct||10,f2=b.f2pct||15;
+  b.teams.forEach(t=>{const sp=parseFloat(t.set)||0;if(sp>0){if(!t.f1manual)t.f1=(sp*(1-f1/100)).toFixed(2);if(!t.f2manual)t.f2=(sp*(1-f2/100)).toFixed(2);}});
+  b.teams.forEach((t,i)=>{const e1=document.getElementById('ef1-'+i),e2=document.getElementById('ef2-'+i);if(e1&&!t.f1manual)e1.value=t.f1;if(e2&&!t.f2manual)e2.value=t.f2;});
+  recalcEditor();
 }
-
-function refreshFloorInputs(){
-  ab.teams.forEach((t,i)=>{
-    const f1=document.getElementById('f1-'+i),f2=document.getElementById('f2-'+i);
-    if(f1&&!t.f1manual)f1.value=t.f1;
-    if(f2&&!t.f2manual)f2.value=t.f2;
-  });
+function setEditorTeamSet(i,val){
+  const b=getEditing();if(!b)return;
+  b.teams[i].set=val;
+  const sp=parseFloat(val)||0,f1=b.f1pct||10,f2=b.f2pct||15;
+  if(sp>0){if(!b.teams[i].f1manual){b.teams[i].f1=(sp*(1-f1/100)).toFixed(2);const e=document.getElementById('ef1-'+i);if(e)e.value=b.teams[i].f1;}if(!b.teams[i].f2manual){b.teams[i].f2=(sp*(1-f2/100)).toFixed(2);const e=document.getElementById('ef2-'+i);if(e)e.value=b.teams[i].f2;}}
+  recalcEditor();saveBreaks();
 }
-
-function setTeamSet(i,val){
-  ab.teams[i].set=val;
-  const sp=parseFloat(val)||0,f1pct=ab.f1pct||10,f2pct=ab.f2pct||15;
-  if(sp>0){
-    if(!ab.teams[i].f1manual){ab.teams[i].f1=(sp*(1-f1pct/100)).toFixed(2);const el=document.getElementById('f1-'+i);if(el)el.value=ab.teams[i].f1;}
-    if(!ab.teams[i].f2manual){ab.teams[i].f2=(sp*(1-f2pct/100)).toFixed(2);const el=document.getElementById('f2-'+i);if(el)el.value=ab.teams[i].f2;}
-  }
-  recalc();saveActive();
+function setEditorTeamF1(i,val){const b=getEditing();if(!b)return;b.teams[i].f1=val;b.teams[i].f1manual=val!=='';const e=document.getElementById('ef1-'+i);if(e)e.className='pi f1'+(b.teams[i].f1manual?' manual':'');recalcEditor();saveBreaks();}
+function setEditorTeamF2(i,val){const b=getEditing();if(!b)return;b.teams[i].f2=val;b.teams[i].f2manual=val!=='';const e=document.getElementById('ef2-'+i);if(e)e.className='pi f2'+(b.teams[i].f2manual?' manual':'');recalcEditor();saveBreaks();}
+let editorSellOrder=0;
+function updateEditorTeamFS(i,val){
+  const b=getEditing();if(!b)return;
+  b.teams[i].fs=val;
+  if(val&&parseFloat(val)>0&&!b.teams[i].pos){editorSellOrder++;b.teams[i].pos=editorSellOrder;}
+  if(!val||parseFloat(val)<=0){b.teams[i].pos=null;recalcEditorSellOrder();}
+  recalcEditor();saveBreaks();
+  const bgs=document.querySelectorAll('.pos-badge');if(bgs[i]){const p=b.teams[i].pos;bgs[i].textContent=p||'';bgs[i].className='pos-badge'+(p?(p<=8?' early':p<=22?' mid':' late'):'');}
 }
-
-function setTeamF1(i,val){ab.teams[i].f1=val;ab.teams[i].f1manual=val!=='';const el=document.getElementById('f1-'+i);if(el)el.className='pi f1'+(ab.teams[i].f1manual?' manual':'');recalc();saveActive();}
-function setTeamF2(i,val){ab.teams[i].f2=val;ab.teams[i].f2manual=val!=='';const el=document.getElementById('f2-'+i);if(el)el.className='pi f2'+(ab.teams[i].f2manual?' manual':'');recalc();saveActive();}
-
-let sellOrder=0;
-function updateTeamFS(i,val){
-  ab.teams[i].fs=val;
-  if(val&&parseFloat(val)>0&&!ab.teams[i].pos){sellOrder++;ab.teams[i].pos=sellOrder;}
-  if(!val||parseFloat(val)<=0){ab.teams[i].pos=null;recalcSellOrder();}
-  recalc();saveActive();
-  document.getElementById('foot-total').textContent='$'+(ab.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0)).toFixed(2);
-  const badges=document.querySelectorAll('.pos-badge');
-  if(badges[i]){const p=ab.teams[i].pos;badges[i].textContent=p||'';badges[i].className='pos-badge'+(p?(p<=8?' early':p<=22?' mid':' late'):'');}
-}
-
-function recalcSellOrder(){
-  const sorted=ab.teams.filter(t=>t.pos).sort((a,b)=>a.pos-b.pos);
-  sorted.forEach((t,idx)=>t.pos=idx+1);sellOrder=sorted.length;
-}
-
-function renderActive(){
-  document.getElementById('bn').value=ab.name||'';
-  document.getElementById('bd').value=ab.date||'';
-  document.getElementById('bt').value=ab.target||350;
-  document.getElementById('f1pct').value=ab.f1pct||10;
-  document.getElementById('f2pct').value=ab.f2pct||15;
-  document.getElementById('hdr-break-name').textContent=ab.name||'';
-  renderBoxes();if(ab.boxes.length===0)addBoxSlot();
-  buildTeamTable();recalc();
-}
-
-function buildTeamTable(){
-  const tbody=document.getElementById('team-body');tbody.innerHTML='';
-  ab.teams.forEach((t,i)=>{
-    const p=t.pos;const posClass=p?(p<=8?'early':p<=22?'mid':'late'):'';
+function recalcEditorSellOrder(){const b=getEditing();if(!b)return;const s=b.teams.filter(t=>t.pos).sort((a,x)=>a.pos-x.pos);s.forEach((t,i)=>t.pos=i+1);editorSellOrder=s.length;}
+function buildEditorTeamTable(){
+  const b=getEditing();const tb=document.getElementById('ed-team-body');tb.innerHTML='';if(!b)return;
+  const ro=b.status==='finalized';
+  b.teams.forEach((t,i)=>{
+    const p=t.pos,pc=p?(p<=8?'early':p<=22?'mid':'late'):'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td title="${t.name}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${t.name}</td>
-    <td><input type="number" class="pi sp" value="${t.set}" oninput="setTeamSet(${i},this.value)" /></td>
-    <td><input type="number" class="pi f1${t.f1manual?' manual':''}" id="f1-${i}" value="${t.f1}" oninput="setTeamF1(${i},this.value)" /></td>
-    <td><input type="number" class="pi f2${t.f2manual?' manual':''}" id="f2-${i}" value="${t.f2}" oninput="setTeamF2(${i},this.value)" /></td>
-    <td><input type="number" class="pi fs" value="${t.fs}" oninput="updateTeamFS(${i},this.value)" /></td>
-    <td><span class="pos-badge ${posClass}">${p||''}</span></td>`;
-    tbody.appendChild(tr);
+    if(ro){
+      tr.innerHTML=`<td title="${t.name}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:138px;">${t.name}</td>
+      <td style="font-size:11px;text-align:right;">${t.set?'$'+parseFloat(t.set).toFixed(0):''}</td>
+      <td style="font-size:11px;text-align:right;">${t.f1?'$'+parseFloat(t.f1).toFixed(0):''}</td>
+      <td style="font-size:11px;text-align:right;">${t.f2?'$'+parseFloat(t.f2).toFixed(0):''}</td>
+      <td style="font-size:11px;font-weight:600;text-align:right;color:var(--green);">${t.fs?'$'+parseFloat(t.fs).toFixed(0):''}</td>
+      <td><span class="pos-badge ${pc}">${p||''}</span></td>`;
+    } else {
+      tr.innerHTML=`<td title="${t.name}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:138px;">${t.name}</td>
+      <td><input type="number" class="pi sp" value="${t.set}" oninput="setEditorTeamSet(${i},this.value)" /></td>
+      <td><input type="number" class="pi f1${t.f1manual?' manual':''}" id="ef1-${i}" value="${t.f1}" oninput="setEditorTeamF1(${i},this.value)" /></td>
+      <td><input type="number" class="pi f2${t.f2manual?' manual':''}" id="ef2-${i}" value="${t.f2}" oninput="setEditorTeamF2(${i},this.value)" /></td>
+      <td><input type="number" class="pi fs" value="${t.fs}" oninput="updateEditorTeamFS(${i},this.value)" /></td>
+      <td><span class="pos-badge ${pc}">${p||''}</span></td>`;
+    }
+    tb.appendChild(tr);
   });
 }
 
-function recalc(){
-  const cost=ab.boxes.reduce((s,b)=>{
-    const inv=inventory.find(x=>x.id==b.invId);
-    return s+(inv?parseFloat(inv.cost)||0:0)*b.qty*1.18;
-  },0);
-  const target=parseFloat(document.getElementById('bt')?.value)||350;
+function calcCost(b){return b.boxes.reduce((s,bx)=>{const inv=inventory.find(x=>x.id==bx.invId);return s+(inv?parseFloat(inv.cost)||0:0)*bx.qty*1.18;},0);}
+
+function recalcEditor(){
+  const b=getEditing();if(!b)return;
+  const cost=calcCost(b);
+  const target=b.target||350;
   const need=cost+target;
-  const sold=ab.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
+  const sold=b.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
   const profit=sold-cost;
   const pct=need>0?Math.min(100,(sold/need)*100):0;
-  const soldCount=ab.teams.filter(t=>t.fs&&parseFloat(t.fs)>0).length;
+  const sc=b.teams.filter(t=>t.fs&&parseFloat(t.fs)>0).length;
   const $=n=>'$'+n.toFixed(2);
-  document.getElementById('m-cost').textContent=$(cost);
-  document.getElementById('m-need').textContent=$(need);
-  const se=document.getElementById('m-sold');se.textContent=$(sold);se.className='metric-value'+(sold>0?' good':'');
-  const pe=document.getElementById('m-profit');pe.textContent=$(profit);pe.className='metric-value '+(profit>=target?'good':profit>=0?'muted':'bad');
-  document.getElementById('prog').style.width=pct.toFixed(1)+'%';
-  document.getElementById('prog-lbl').textContent=$(sold)+' of '+$(need)+' needed';
-  document.getElementById('foot-total').textContent=$(sold);
-  document.getElementById('sold-count').textContent=soldCount+' / 32 sold';
+  document.getElementById('ed-cost').textContent=$(cost);
+  document.getElementById('ed-need').textContent=$(need);
+  const se=document.getElementById('ed-sold');se.textContent=$(sold);se.className='metric-value'+(sold>0?' good':'');
+  const pe=document.getElementById('ed-profit');pe.textContent=$(profit);pe.className='metric-value '+(profit>=target?'good':profit>=0?'muted':'bad');
+  document.getElementById('ed-prog').style.width=pct.toFixed(1)+'%';
+  document.getElementById('ed-prog-lbl').textContent=$(sold)+' of '+$(need)+' needed';
+  document.getElementById('ed-foot-total').textContent=$(sold);
+  document.getElementById('ed-sold-count').textContent=sc+' / 32 sold';
+  document.getElementById('editor-title').textContent=b.name||'Unnamed break';
+  // Projected profits
+  const projF1=b.teams.reduce((s,t)=>{const v=parseFloat(t.f1)||0;return s+(v>0?v:0);},0);
+  const projF2=b.teams.reduce((s,t)=>{const v=parseFloat(t.f2)||0;return s+(v>0?v:0);},0);
+  const pf1=projF1-cost,pf2=projF2-cost;
+  document.getElementById('ed-proj-f1').textContent=projF1>0?$(projF1)+' → profit: '+$(pf1):'—';
+  document.getElementById('ed-proj-f2').textContent=projF2>0?$(projF2)+' → profit: '+$(pf2):'—';
+  document.getElementById('ed-proj-f1').style.color=pf1>=0?'var(--green)':'var(--red)';
+  document.getElementById('ed-proj-f2').style.color=pf2>=0?'var(--green)':'var(--red)';
 }
 
-function startNewBreak(){ab=freshBreak();saveActive();renderActive();}
-function clearActive(){if(confirm('Clear the active break?')){ab=freshBreak();saveActive();renderActive();}}
-
+// ── WHATNOT EXPORT ───────────────────────────────────────────────────────────
 function showWhatnotExport(){
-  const modal=document.getElementById('whatnot-modal');
-  const rows=ab.teams.filter(t=>t.set&&parseFloat(t.set)>0).map(t=>t.name+'\t$'+parseFloat(t.set).toFixed(2));
-  document.getElementById('whatnot-text').value=rows.join('\n');
-  modal.style.display=modal.style.display==='none'?'block':'none';
+  const b=getEditing();if(!b)return;
+  const m=document.getElementById('whatnot-modal');
+  document.getElementById('whatnot-text').value=b.teams.filter(t=>t.set&&parseFloat(t.set)>0).map(t=>t.name+'\t$'+parseFloat(t.set).toFixed(2)).join('\n');
+  m.style.display=m.style.display==='none'?'block':'none';
 }
-function copyWhatnot(){
-  const ta=document.getElementById('whatnot-text');ta.select();document.execCommand('copy');
-  const c=document.getElementById('copy-confirm');c.style.opacity=1;setTimeout(()=>c.style.opacity=0,2000);
-}
+function copyWhatnot(){const ta=document.getElementById('whatnot-text');ta.select();document.execCommand('copy');const c=document.getElementById('copy-confirm');c.style.opacity=1;setTimeout(()=>c.style.opacity=0,2000);}
 
-function reviewBreak(){
-  const cost=ab.boxes.reduce((s,b)=>{
-    const inv=inventory.find(x=>x.id==b.invId);
-    return s+(inv?parseFloat(inv.cost)||0:0)*b.qty*1.18;
-  },0);
-  const sold=ab.teams.reduce((s,t)=>s+(parseFloat(t.fs)||0),0);
-  const profit=sold-cost;
-  if(confirm(`Lock "${ab.name||'Unnamed break'}"?\n\nTotal cost: $${cost.toFixed(2)}\nTotal sold: $${sold.toFixed(2)}\nProfit: $${profit.toFixed(2)}\n\nInventory will be deducted automatically. Once locked this break is read-only.`)){
-    // Deduct inventory
-    ab.boxes.forEach(b=>{
-      const inv=inventory.find(x=>x.id==b.invId);
-      if(inv){inv.qty=Math.max(0,(parseInt(inv.qty)||0)-b.qty);}
-    });
-    saveInventory();
-    breaks.unshift({...ab,locked:true,cost,sold,profit});
-    saveBreaks();ab=freshBreak();saveActive();
-    renderActive();renderDashboard();renderHistory();renderAnalytics();showPage('history');
-  }
-}
-
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
 function renderDashboard(){
-  const locked=breaks.filter(b=>b.locked);
-  const totalProfit=locked.reduce((s,b)=>s+b.profit,0);
-  const avgProfit=locked.length?totalProfit/locked.length:0;
-  const hitTarget=locked.filter(b=>b.profit>=(b.target||350)).length;
-  const hitPct=locked.length?(hitTarget/locked.length*100):0;
+  const fin=breaks.filter(b=>b.status==='finalized');
+  const drafts=breaks.filter(b=>b.status==='draft');
+  const tp=fin.reduce((s,b)=>s+b.profit,0),ap=fin.length?tp/fin.length:0;
+  const ht=fin.filter(b=>b.profit>=(b.target||350)).length,hp=fin.length?(ht/fin.length*100):0;
   document.getElementById('dash-metrics').innerHTML=`
-    <div class="metric"><div class="metric-label">Total profit</div><div class="metric-value ${totalProfit>=0?'good':'bad'}">$${totalProfit.toFixed(0)}</div></div>
-    <div class="metric"><div class="metric-label">Avg per break</div><div class="metric-value ${avgProfit>=0?'good':'bad'}">$${avgProfit.toFixed(0)}</div></div>
-    <div class="metric"><div class="metric-label">Breaks run</div><div class="metric-value">${locked.length}</div></div>
-    <div class="metric"><div class="metric-label">Hit target</div><div class="metric-value ${hitPct>=50?'good':'muted'}">${hitPct.toFixed(0)}%</div></div>`;
-  const recent=document.getElementById('dash-recent');
-  if(!locked.length){recent.innerHTML='<div class="empty">No locked breaks yet</div>';}
-  else{recent.innerHTML=locked.slice(0,6).map(b=>`<div class="recent-row"><span style="font-weight:500">${b.name||'Unnamed'}</span><span style="color:var(--text2);font-size:12px">${b.date||''}</span><span style="font-family:'DM Mono',monospace;font-weight:600;color:${b.profit>=0?'var(--green)':'var(--red)'}">$${b.profit.toFixed(0)}</span><span class="badge ${b.profit>=(b.target||350)?'badge-green':'badge-red'}">${b.profit>=(b.target||350)?'Hit':'Miss'}</span></div>`).join('');}
-  const teamMap={};
-  locked.forEach(b=>b.teams.forEach(t=>{
-    if(!teamMap[t.name])teamMap[t.name]={total:0,count:0};
-    const fs=parseFloat(t.fs)||0;if(fs>0){teamMap[t.name].total+=fs;teamMap[t.name].count++;}
-  }));
-  const sorted=Object.entries(teamMap).filter(([,v])=>v.count>0).sort((a,b)=>b[1].total/b[1].count-a[1].total/a[1].count).slice(0,6);
-  const tt=document.getElementById('dash-top-teams');
-  if(!sorted.length){tt.innerHTML='<div class="empty">No data yet</div>';}
-  else{tt.innerHTML=sorted.map(([name,v],i)=>`<div class="recent-row"><span style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:16px">${i+1}</span><span style="font-weight:500">${name}</span></span><span style="font-family:'DM Mono',monospace;font-weight:600">$${(v.total/v.count).toFixed(2)}</span></div>`).join('');}
+    <div class="metric"><div class="metric-label">Total profit</div><div class="metric-value ${tp>=0?'good':'bad'}">$${tp.toFixed(0)}</div></div>
+    <div class="metric"><div class="metric-label">Avg per break</div><div class="metric-value ${ap>=0?'good':'bad'}">$${ap.toFixed(0)}</div></div>
+    <div class="metric"><div class="metric-label">Finalized</div><div class="metric-value">${fin.length}</div></div>
+    <div class="metric"><div class="metric-label">Hit target</div><div class="metric-value ${hp>=50?'good':'muted'}">${hp.toFixed(0)}%</div></div>`;
+  const dr=document.getElementById('dash-recent');
+  let html='';
+  if(drafts.length){html+=`<div style="font-size:11px;font-weight:600;color:var(--amber);margin-bottom:6px;">${drafts.length} draft${drafts.length>1?'s':''} in progress</div>`;html+=drafts.slice(0,3).map(b=>`<div class="recent-row"><span style="font-weight:500;">${b.name||'Unnamed'}</span><span class="badge badge-amber">Draft</span><button class="btn btn-sm" onclick="openEditor(${b.id})">Open →</button></div>`).join('');}
+  if(fin.length){html+=fin.slice(0,5).map(b=>`<div class="recent-row"><span style="font-weight:500;">${b.name||'Unnamed'}</span><span style="color:var(--text2);font-size:11px;">${b.date||''}</span><span style="font-weight:600;color:${b.profit>=0?'var(--green)':'var(--red)'};">$${b.profit.toFixed(0)}</span><span class="badge ${b.profit>=(b.target||350)?'badge-green':'badge-red'}">${b.profit>=(b.target||350)?'Hit':'Miss'}</span></div>`).join('');}
+  if(!html)html='<div class="empty">No breaks yet</div>';
+  dr.innerHTML=html;
+  const tm={};fin.forEach(b=>b.teams.forEach(t=>{if(!tm[t.name])tm[t.name]={total:0,count:0};const f=parseFloat(t.fs)||0;if(f>0){tm[t.name].total+=f;tm[t.name].count++;}}));
+  const ts=Object.entries(tm).filter(([,v])=>v.count>0).sort((a,b)=>b[1].total/b[1].count-a[1].total/a[1].count).slice(0,6);
+  document.getElementById('dash-top-teams').innerHTML=ts.length?ts.map(([n,v],i)=>`<div class="recent-row"><span style="display:flex;align-items:center;gap:6px;"><span style="font-size:10px;color:var(--text3);width:14px;">${i+1}</span><span style="font-weight:500;">${n}</span></span><span style="font-weight:600;">$${(v.total/v.count).toFixed(2)}</span></div>`).join(''):'<div class="empty">No data yet</div>';
 }
 
+// ── HISTORY ──────────────────────────────────────────────────────────────────
 function renderHistory(){
   const el=document.getElementById('history-list');
-  if(!breaks.length){el.innerHTML='<div class="empty">No breaks yet</div>';return;}
-  el.innerHTML=breaks.map(b=>`<div class="history-row"><span style="font-weight:500">${b.name||'Unnamed'}</span><span style="text-align:center;color:var(--text2);font-size:12px">${b.date||'—'}</span><span style="text-align:right;color:var(--text2);font-family:'DM Mono',monospace">$${(b.cost||0).toFixed(0)}</span><span style="text-align:right;font-family:'DM Mono',monospace">$${(b.sold||0).toFixed(0)}</span><span style="text-align:right;font-family:'DM Mono',monospace;font-weight:600;color:${b.profit>=0?'var(--green)':'var(--red)'}">$${(b.profit||0).toFixed(0)}</span><span style="text-align:center"><span class="badge ${b.profit>=(b.target||350)?'badge-green':'badge-red'}">${b.profit>=(b.target||350)?'Hit':'Miss'}</span></span></div>`).join('');
+  const fin=breaks.filter(b=>b.status==='finalized');
+  el.innerHTML=fin.length?fin.map(b=>`<div class="history-row"><span style="font-weight:500;">${b.name||'Unnamed'}</span><span style="text-align:center;color:var(--text2);font-size:11px;">${b.date||'—'}</span><span style="text-align:right;color:var(--text2);">$${(b.cost||0).toFixed(0)}</span><span style="text-align:right;">$${(b.sold||0).toFixed(0)}</span><span style="text-align:right;font-weight:600;color:${b.profit>=0?'var(--green)':'var(--red)'};">$${(b.profit||0).toFixed(0)}</span><span style="text-align:center;"><span class="badge ${b.profit>=(b.target||350)?'badge-green':'badge-red'}">${b.profit>=(b.target||350)?'Hit':'Miss'}</span></span></div>`).join(''):'<div class="empty">No finalized breaks yet</div>';
 }
 
+// ── ANALYTICS ────────────────────────────────────────────────────────────────
 function renderAnalytics(){
-  const locked=breaks.filter(b=>b.locked);
+  const fin=breaks.filter(b=>b.status==='finalized');
   const el=document.getElementById('analytics-list');
-  if(!locked.length){el.innerHTML='<div class="empty">Lock a break to see team analytics</div>';return;}
-  const teamMap={};
-  TEAMS.forEach(name=>{teamMap[name]={name,sales:[],positions:[],sets:[]};});
-  locked.forEach(b=>b.teams.forEach(t=>{
-    const tm=teamMap[t.name];if(!tm)return;
-    const fs=parseFloat(t.fs)||0,sp=parseFloat(t.set)||0;
-    if(fs>0)tm.sales.push(fs);
-    if(t.pos)tm.positions.push(t.pos);
-    if(sp>0&&fs>0)tm.sets.push(fs/sp*100);
-  }));
-  const rows=Object.values(teamMap).filter(t=>t.sales.length>0).sort((a,b)=>{
-    const ap=a.positions.length?a.positions.reduce((s,x)=>s+x,0)/a.positions.length:99;
-    const bp=b.positions.length?b.positions.reduce((s,x)=>s+x,0)/b.positions.length:99;
-    return ap-bp;
+  if(!fin.length){el.innerHTML='<div class="empty">Finalize a break to see team analytics</div>';return;}
+  const tm={};TEAMS.forEach(n=>{tm[n]={name:n,sales:[],positions:[],sets:[]};});
+  fin.forEach(b=>b.teams.forEach(t=>{const m=tm[t.name];if(!m)return;const f=parseFloat(t.fs)||0,s=parseFloat(t.set)||0;if(f>0)m.sales.push(f);if(t.pos)m.positions.push(t.pos);if(s>0&&f>0)m.sets.push(f/s*100);}));
+  const rows=Object.values(tm).filter(t=>t.sales.length>0).sort((a,b)=>{const ap=a.positions.length?a.positions.reduce((s,x)=>s+x,0)/a.positions.length:99,bp=b.positions.length?b.positions.reduce((s,x)=>s+x,0)/b.positions.length:99;return ap-bp;});
+  el.innerHTML=rows.map(t=>{const as=(t.sales.reduce((s,x)=>s+x,0)/t.sales.length).toFixed(2),ap=t.positions.length?(t.positions.reduce((s,x)=>s+x,0)/t.positions.length).toFixed(1):'—',pct=t.sets.length?(t.sets.reduce((s,x)=>s+x,0)/t.sets.length).toFixed(0):'—';const pn=parseFloat(ap),pc=isNaN(pn)?'badge-gray':pn<=8?'badge-green':pn<=22?'badge-gray':'badge-red';return `<div class="stat-row"><span style="font-weight:500;">${t.name}</span><span style="text-align:right;">$${as}</span><span style="text-align:right;"><span class="badge ${pc}" style="font-size:9px;">${ap}</span></span><span style="text-align:right;">${pct}%</span><span style="text-align:right;color:var(--text2);">${t.sales.length}</span></div>`;}).join('');
+}
+
+// ── INVENTORY ────────────────────────────────────────────────────────────────
+function addInventoryItem(){inventory.push({id:Date.now(),name:'',cost:'',qty:0,restock:0,url:'',marketPrice:null,marketStatus:'idle'});saveInventory();renderInventory();}
+function updateInv(id,field,val){const item=inventory.find(x=>x.id===id);if(!item)return;if(field==='qty'||field==='restock')val=parseInt(val)||0;item[field]=val;saveInventory();if(field==='qty')renderInventory();}
+function stepQty(id,delta){const item=inventory.find(x=>x.id===id);if(!item)return;item.qty=Math.max(0,(parseInt(item.qty)||0)+delta);saveInventory();renderInventory();}
+function removeInv(id){if(!confirm('Remove this product?'))return;inventory=inventory.filter(x=>x.id!==id);saveInventory();renderInventory();}
+function restockInv(id){const item=inventory.find(x=>x.id===id);if(!item)return;item.qty=(parseInt(item.qty)||0)+(parseInt(item.restock)||0);saveInventory();renderInventory();}
+function renderInventory(){
+  const c=document.getElementById('inv-rows');c.innerHTML='';
+  if(!inventory.length){c.innerHTML='<div class="empty">No products yet</div>';return;}
+  inventory.forEach(item=>{
+    const qty=parseInt(item.qty)||0,qc=qty===0?'qty-out':qty<=2?'qty-low':'qty-ok';
+    let mHtml=item.marketStatus==='loading'?'<span class="market-price loading">fetching...</span>':item.marketStatus==='found'?`<span class="market-price found">$${item.marketPrice}</span>`:item.url?`<a href="${item.url}" target="_blank" style="font-size:11px;color:var(--blue);">View</a>`:'<span style="color:var(--text3);">—</span>';
+    const row=document.createElement('div');row.className='inv-grid';
+    row.innerHTML=`<input type="text" placeholder="Product name" value="${item.name||''}" onblur="updateInv(${item.id},'name',this.value)" /><input type="number" placeholder="0.00" value="${item.cost||''}" onblur="updateInv(${item.id},'cost',this.value)" style="text-align:right;" /><div style="display:flex;align-items:center;gap:5px;"><button class="btn btn-sm" style="padding:2px 7px;font-size:15px;" onclick="stepQty(${item.id},-1)">−</button><span class="qty-badge ${qc}">${qty}</span><button class="btn btn-sm" style="padding:2px 7px;font-size:15px;" onclick="stepQty(${item.id},1)">+</button></div><div style="display:flex;align-items:center;gap:4px;"><input type="number" placeholder="0" value="${item.restock||0}" onblur="updateInv(${item.id},'restock',this.value)" style="width:44px;text-align:center;" /><button class="btn btn-sm btn-primary" onclick="restockInv(${item.id})">+ Add</button></div><div>${mHtml}</div><input type="url" placeholder="Paste product URL" value="${item.url||''}" onchange="updateInv(${item.id},'url',this.value);fetchMarketPrice(${item.id})" style="font-size:11px;" /><button class="btn btn-sm btn-danger" onclick="removeInv(${item.id})" style="padding:3px 7px;">✕</button>`;
+    c.appendChild(row);
   });
-  el.innerHTML=rows.map(t=>{
-    const avgSale=(t.sales.reduce((s,x)=>s+x,0)/t.sales.length).toFixed(2);
-    const avgPos=t.positions.length?(t.positions.reduce((s,x)=>s+x,0)/t.positions.length).toFixed(1):'—';
-    const avgPct=t.sets.length?(t.sets.reduce((s,x)=>s+x,0)/t.sets.length).toFixed(0):'—';
-    const posNum=parseFloat(avgPos);
-    const posClass=isNaN(posNum)?'badge-gray':posNum<=8?'badge-green':posNum<=22?'badge-gray':'badge-red';
-    return `<div class="stat-row"><span style="font-weight:500">${t.name}</span><span style="text-align:right;font-family:'DM Mono',monospace">$${avgSale}</span><span style="text-align:right"><span class="badge ${posClass}" style="font-size:10px">${avgPos}</span></span><span style="text-align:right;font-family:'DM Mono',monospace">${avgPct}%</span><span style="text-align:right;color:var(--text2)">${t.sales.length}</span></div>`;
-  }).join('');
+}
+async function fetchMarketPrice(id){
+  const item=inventory.find(x=>x.id===id);if(!item||!item.url)return;
+  item.marketStatus='loading';renderInventory();
+  try{const resp=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(item.url),{signal:AbortSignal.timeout(8000)});if(!resp.ok)throw new Error();const html=(await resp.json()).contents||'';const patterns=[/itemprop="price"[^>]*content="([\d.]+)"/i,/"price":\s*"?([\d.]+)"?/,/class="[^"]*price[^"]*"[^>]*>\s*\$?([\d,]+\.?\d*)/i,/\$\s*([\d,]+\.\d{2})/,/"currentPrice"[^>]*>([\d.]+)/i];let found=null;for(const p of patterns){const m=html.match(p);if(m){const v=parseFloat(m[1].replace(/,/g,''));if(v>1&&v<10000){found=v.toFixed(2);break;}}}item.marketStatus=found?'found':'failed';if(found)item.marketPrice=found;}catch(e){item.marketStatus='failed';}
+  saveInventory();renderInventory();
+}
+async function fetchAllMarketPrices(){for(const item of inventory){if(item.url&&item.marketStatus!=='found')await fetchMarketPrice(item.id);}}
+
+// ── BACKUP / RESTORE ─────────────────────────────────────────────────────────
+function exportData(){
+  const data={breaks,inventory,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='break-tracker-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(url);
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{const data=JSON.parse(e.target.result);if(!confirm('Import backup from '+(data.exportedAt||'unknown date')+'?\n\nThis will replace your current data.'))return;if(data.breaks)breaks=data.breaks;if(data.inventory)inventory=data.inventory;saveBreaks();saveInventory();renderDashboard();renderHistory();renderAnalytics();renderBreaksList();renderInventory();alert('Imported!');}
+    catch(err){alert('Invalid backup file.');}
+  };reader.readAsText(file);input.value='';
 }
 
 load();
