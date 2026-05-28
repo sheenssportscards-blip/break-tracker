@@ -368,15 +368,36 @@ let breaks=[];      // all breaks (draft + finalized)
 let inventory=[];
 let editingId=null; // which break is open in editor
 
-function saveBreaks(){try{localStorage.setItem('bt-breaks-v2',JSON.stringify(breaks));}catch(e){}}
-function saveInventory(){try{localStorage.setItem('bt-inventory-v1',JSON.stringify(inventory));}catch(e){}}
+function saveBreaks(){
+  try{localStorage.setItem('bt-breaks-v2',JSON.stringify(breaks));}catch(e){}
+  try{if(window._fbReady&&window._fbSet&&window._fbRef&&window._fbDb)window._fbSet(window._fbRef(window._fbDb,'breaks'),breaks);}catch(e){}
+}
+function saveInventory(){
+  try{localStorage.setItem('bt-inventory-v1',JSON.stringify(inventory));}catch(e){}
+  try{if(window._fbReady&&window._fbSet&&window._fbRef&&window._fbDb)window._fbSet(window._fbRef(window._fbDb,'inventory'),inventory);}catch(e){}
+}
 
-function load(){
+async function load(){
+  // Load from localStorage instantly as fallback
   try{const d=localStorage.getItem('bt-breaks-v2');if(d)breaks=JSON.parse(d);}catch(e){}
-  // Migrate old single active break
-  try{const d=localStorage.getItem('bt-active-v3');if(d&&!breaks.length){const ab=JSON.parse(d);if(ab.name){ab.id=ab.id||Date.now();ab.status='draft';breaks.push(ab);saveBreaks();}}}catch(e){}
   try{const d=localStorage.getItem('bt-inventory-v1');if(d)inventory=JSON.parse(d);}catch(e){}
+  try{const d=localStorage.getItem('bt-active-v3');if(d&&!breaks.length){const ab=JSON.parse(d);if(ab.name){ab.id=ab.id||Date.now();ab.status='draft';breaks.push(ab);}}}catch(e){}
   renderDashboard();renderHistory();renderAnalytics();renderBreaksList();
+  // Then sync with Firebase (cloud = source of truth)
+  try{
+    const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const {getDatabase,ref,set,get}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    const fbApp=initializeApp({apiKey:"AIzaSyAMP0Djw1uMzXjbSKq2IHXHXbDeCn9QlcQ",authDomain:"sheens-break-tracker.firebaseapp.com",databaseURL:"https://sheens-break-tracker-default-rtdb.firebaseio.com",projectId:"sheens-break-tracker",storageBucket:"sheens-break-tracker.firebasestorage.app",messagingSenderId:"415537648855",appId:"1:415537648855:web:cda70b86687dca620b8c92"});
+    const fbDb=getDatabase(fbApp);
+    window._fbDb=fbDb;window._fbRef=ref;window._fbSet=set;
+    const [bSnap,iSnap]=await Promise.all([get(ref(fbDb,'breaks')),get(ref(fbDb,'inventory'))]);
+    if(bSnap.exists()){breaks=bSnap.val()||[];localStorage.setItem('bt-breaks-v2',JSON.stringify(breaks));}
+    else if(breaks.length){set(ref(fbDb,'breaks'),breaks);}
+    if(iSnap.exists()){inventory=iSnap.val()||[];localStorage.setItem('bt-inventory-v1',JSON.stringify(inventory));}
+    else if(inventory.length){set(ref(fbDb,'inventory'),inventory);}
+    window._fbReady=true;
+    renderDashboard();renderHistory();renderAnalytics();renderBreaksList();
+  }catch(e){console.warn('Firebase unavailable, using localStorage only:',e);}
 }
 
 function getEditing(){return breaks.find(b=>b.id===editingId);}
