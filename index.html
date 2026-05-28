@@ -250,6 +250,29 @@ tfoot td:first-child{text-align:left;padding-left:2px;color:var(--text2);font-we
 
   <div class="actions" id="ed-actions"></div>
 
+  <!-- COMBO CALCULATOR -->
+  <div id="combo-modal" style="display:none;margin-top:12px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="card-title" style="margin:0;">Combo deal calculator</div>
+        <button class="btn btn-sm" onclick="document.getElementById('combo-modal').style.display='none'">✕</button>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Select teams to bundle, then set a deal price to see the discount.</p>
+      <div id="combo-team-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:14px;max-height:260px;overflow-y:auto;"></div>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;border:1px solid var(--border);margin-bottom:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div><div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Combined set</div><div id="combo-set" style="font-size:16px;font-weight:600;">—</div></div>
+          <div><div style="font-size:10px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Combined floor 1</div><div id="combo-f1" style="font-size:16px;font-weight:600;color:var(--blue);">—</div></div>
+          <div><div style="font-size:10px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Combined floor 2</div><div id="combo-f2" style="font-size:16px;font-weight:600;color:var(--amber);">—</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="field" style="margin:0;"><label>Your deal price $</label><input type="number" id="combo-deal" placeholder="0" oninput="updateComboDeal()" style="width:100px;" /></div>
+          <div id="combo-deal-result" style="font-size:13px;color:var(--text2);margin-top:18px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PASTE MODAL -->
   <div id="paste-modal" style="display:none;margin-top:12px;">
     <div class="card">
@@ -398,6 +421,9 @@ function openEditor(id){
   const badge=document.getElementById('editor-status-badge');
   badge.textContent=b.status==='finalized'?'Finalized':'Draft';
   badge.className='badge '+(b.status==='finalized'?'badge-green':'badge-amber');
+  // Restore sell order counter from saved positions
+  const maxPos=b.teams.reduce((m,t)=>t.pos&&t.pos>m?t.pos:m,0);
+  editorSellOrder=maxPos;
   renderEditorBoxes();
   if(b.boxes.length===0)addEditorBoxSlot();
   buildEditorTeamTable();
@@ -515,9 +541,10 @@ function renderEditorActions(){
   } else {
     el.innerHTML=`
       <button class="btn btn-sm btn-danger" onclick="deleteBreak(${b.id});showPage('breaks')">Delete</button>
+      <button class="btn btn-sm" onclick="openComboCalculator()">Combo deal</button>
       <button class="btn btn-sm btn-primary" onclick="showWhatnotExport()">Export for WhatNot</button>
       <button class="btn btn-sm btn-amber" onclick="saveBreaks();alert('Saved as draft!')">Save draft</button>
-      <button class="btn btn-success" onclick="finalizeBreak(${b.id});showPage('breaks')">✓ Finalize break</button>`;
+      <button class="btn btn-success" onclick="finalizeBreak(${b.id})">✓ Finalize break</button>`;
   }
 }
 
@@ -714,6 +741,61 @@ async function fetchMarketPrice(id){
   saveInventory();renderInventory();
 }
 async function fetchAllMarketPrices(){for(const item of inventory){if(item.url&&item.marketStatus!=='found')await fetchMarketPrice(item.id);}}
+
+// ── COMBO CALCULATOR ─────────────────────────────────────────────────────────
+function openComboCalculator(){
+  const b=getEditing();if(!b)return;
+  const el=document.getElementById('combo-team-list');
+  const unsold=b.teams.map((t,i)=>({...t,i})).filter(t=>!t.fs||parseFloat(t.fs)===0);
+  if(!unsold.length){el.innerHTML='<div style="font-size:13px;color:var(--text2);padding:8px;">All teams have been sold.</div>';document.getElementById('combo-modal').style.display='block';return;}
+  el.innerHTML=unsold.map(t=>{
+    const sp=parseFloat(t.set)||0;
+    return `<label style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;font-size:12px;background:var(--surface);">
+      <input type="checkbox" onchange="updateComboCalc()" data-idx="${t.i}" style="width:auto;" />
+      <span style="flex:1;">${t.name}</span>
+      <span style="color:var(--text2);font-size:11px;">${sp?'$'+sp.toFixed(0):''}</span>
+    </label>`;
+  }).join('');
+  document.getElementById('combo-set').textContent='—';
+  document.getElementById('combo-f1').textContent='—';
+  document.getElementById('combo-f2').textContent='—';
+  document.getElementById('combo-deal').value='';
+  document.getElementById('combo-deal-result').textContent='';
+  document.getElementById('combo-modal').style.display='block';
+}
+
+function updateComboCalc(){
+  const b=getEditing();if(!b)return;
+  const checked=[...document.querySelectorAll('#combo-team-list input:checked')].map(el=>parseInt(el.dataset.idx));
+  if(!checked.length){
+    document.getElementById('combo-set').textContent='—';
+    document.getElementById('combo-f1').textContent='—';
+    document.getElementById('combo-f2').textContent='—';
+    document.getElementById('combo-deal-result').textContent='';
+    return;
+  }
+  const totSet=checked.reduce((s,i)=>s+(parseFloat(b.teams[i].set)||0),0);
+  const totF1=checked.reduce((s,i)=>s+(parseFloat(b.teams[i].f1)||0),0);
+  const totF2=checked.reduce((s,i)=>s+(parseFloat(b.teams[i].f2)||0),0);
+  document.getElementById('combo-set').textContent=totSet?'$'+totSet.toFixed(2):'—';
+  document.getElementById('combo-f1').textContent=totF1?'$'+totF1.toFixed(2):'—';
+  document.getElementById('combo-f2').textContent=totF2?'$'+totF2.toFixed(2):'—';
+  updateComboDeal();
+}
+
+function updateComboDeal(){
+  const b=getEditing();if(!b)return;
+  const checked=[...document.querySelectorAll('#combo-team-list input:checked')].map(el=>parseInt(el.dataset.idx));
+  const deal=parseFloat(document.getElementById('combo-deal').value)||0;
+  const totSet=checked.reduce((s,i)=>s+(parseFloat(b.teams[i].set)||0),0);
+  const totF1=checked.reduce((s,i)=>s+(parseFloat(b.teams[i].f1)||0),0);
+  const res=document.getElementById('combo-deal-result');
+  if(!deal||!totSet){res.textContent='';return;}
+  const offSet=((1-deal/totSet)*100).toFixed(1);
+  const offF1=((1-deal/totF1)*100).toFixed(1);
+  const vsF1=deal>=totF1?`<span style="color:var(--green);">✓ above floor 1</span>`:`<span style="color:var(--red);">✗ below floor 1</span>`;
+  res.innerHTML=`<strong>$${deal.toFixed(2)}</strong> = ${offSet}% off set &nbsp;·&nbsp; ${Math.abs(offF1)}% ${deal<totF1?'below':'above'} floor 1 &nbsp;·&nbsp; ${vsF1}`;
+}
 
 // ── PASTE COLUMN ─────────────────────────────────────────────────────────────
 let pasteTargetField = null;
